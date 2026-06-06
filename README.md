@@ -266,24 +266,6 @@ Copy `server/.env.example` to `server/.env` and fill in:
 
 ---
 
-## Screenshots
-
-> Add screenshots to a `screenshots/` folder before final submission.
-
-| Page | File |
-|------|------|
-| Admin Dashboard | `screenshots/dashboard-admin.png` |
-| HR Dashboard | `screenshots/dashboard-hr.png` |
-| Resume Screening | `screenshots/resume-screening.png` |
-| Video Interview Analysis | `screenshots/interview-analysis.png` |
-| Analytics | `screenshots/analytics.png` |
-| Employee Directory | `screenshots/employees.png` |
-| Attendance | `screenshots/attendance.png` |
-| Payroll | `screenshots/payroll.png` |
-| AI Assistant | `screenshots/ai-assistant.png` |
-
----
-
 ## Future Enhancements
 
 - Email notifications via SendGrid
@@ -295,25 +277,6 @@ Copy `server/.env.example` to `server/.env` and fill in:
 - Google / Microsoft SSO integration
 - Searchable audit log viewer UI
 - Multi-tenancy with organisation-level data isolation
-
----
-
-## FWC Hackathon Compliance
-
-This section maps every FWC JD requirement to the exact implementation in HRVerse AI.
-
-| # | Requirement | Implementation | Key Files |
-|---|-------------|---------------|-----------|
-| 1 | **AI Resume Screening** | Groq LLaMA-3.3-70B scores PDF/DOCX on skills, experience, education, communication. Returns structured JSON: score 0–100, strengths[], weaknesses[], recommendation (Shortlisted/Consider/Rejected). | `aiService.js → analyzeResume()` `resumeController.js` `ResumeScreening.jsx` |
-| 2 | **AI Video Interview Analysis** | 5-dimension scoring: communication, confidence, technical depth, sentiment, body language (each 0–100). Aggregated overallScore. AI-generated textual insights. | `aiService.js → analyzeInterview()` `interviewController.js` `InterviewAnalysis.jsx` |
-| 3 | **Analytics Dashboard** | 12 analytics API endpoints. Charts: hiring funnel (bar), skill distribution (bar), score distribution (bar), attendance trends (line), payroll trends (line), performance distribution (bar), interview analytics. CSV export. | `analyticsRoutes.js` `analyticsController.js` `Analytics.jsx` |
-| 4 | **Onboarding Workflow** | 7-step structured pipeline: Offer Letter Signed → IT Asset Allocation → System Access → Training Enrollment → Buddy Assignment → Bond Signing → Team Introduction. % completion per employee. | `Onboarding.js` `onboardingController.js` `Onboarding.jsx` |
-| 5 | **Multi-User Login + RBAC** | 4 roles: Admin, Manager, HR, Employee. JWT-based stateless auth. Every route protected by `protect` middleware with DB-backed user lookup + `authorize(...roles)` factory. Frontend RoleGuard prevents unauthorised page access. | `rbac.js` `authController.js` `RoleGuard.jsx` `App.jsx` |
-| 6 | **AI Assistant** | LLaMA-3.3-70B chatbot with HR-specific system prompt. Markdown-rendered responses. Supports queries about employees, payroll, candidates, attendance, HR policy. | `aiAssistantController.js` `aiAssistantRoutes.js` `AIAssistant.jsx` |
-| 7 | **Attendance Management** | 300,000+ records. Daily summary with present/absent/WFH/rate. Check-in and check-out times. Late arrival detection with `lateMinutes`. Statuses: Present/Absent/Half Day/Leave. | `Attendance.js` `attendanceController.js` `AttendanceReplica.jsx` |
-| 8 | **Payroll Processing** | 30,000+ records. Anomaly detection flag. Status lifecycle: Pending → Processed → Paid. Payroll total and trend analytics. Department-level breakdowns. | `Payroll.js` `payrollController.js` `Payroll.jsx` |
-| 9 | **Performance Reviews** | 30,000+ quarterly reviews. AI score per review. PIP tracking (reason, progress %, start date). Promotion-ready flag for scores ≥ 90. Quarter-over-quarter trend charts. | `Performance.js` `performanceController.js` `Performance.jsx` |
-| 10 | **Scalability (5000+ employees)** | 15,000 employees, 300,000+ attendance, 30,000+ payroll/performance. All list endpoints paginated. MongoDB aggregation pipelines for KPIs (no in-memory full-table scans). Atlas auto-scales. | `seedAll.js`, all paginated controllers |
 
 ---
 
