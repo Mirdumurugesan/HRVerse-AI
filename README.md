@@ -1,4 +1,4 @@
-# HRVerse AI 🤖
+# HRVerse AI
 
 > **Enterprise-grade AI-powered HR Management System built for the FWC Hackathon**
 
@@ -10,7 +10,7 @@
 
 ---
 
-## 📋 Project Overview
+## Project Overview
 
 HRVerse AI is a full-stack enterprise HR platform that replaces manual HR processes with an AI-driven pipeline. It automates resume screening, conducts video interview analysis, manages the complete employee lifecycle, and provides real-time analytics — all powered by Groq LLaMA-3.3-70B.
 
@@ -18,7 +18,7 @@ The system is built to scale beyond 15,000+ employees with 300,000+ attendance r
 
 ---
 
-## 🚀 Features
+## Features
 
 ### Core HR Modules
 
@@ -46,7 +46,7 @@ The system is built to scale beyond 15,000+ employees with 300,000+ attendance r
 
 ---
 
-## 🤖 AI Architecture
+## AI Architecture
 
 ```
 Resume / Video Input
@@ -68,7 +68,7 @@ No Gemini. No OpenAI. The AI chain is entirely open-source model-based.
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Frontend
 - **React 19** — latest concurrent rendering
@@ -96,7 +96,7 @@ No Gemini. No OpenAI. The AI chain is entirely open-source model-based.
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -124,7 +124,7 @@ No Gemini. No OpenAI. The AI chain is entirely open-source model-based.
 
 ---
 
-## 🗄 Database Design
+## Database Design
 
 | Collection | Records | Key Fields |
 |-----------|---------|-----------|
@@ -160,7 +160,7 @@ No Gemini. No OpenAI. The AI chain is entirely open-source model-based.
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 ### Prerequisites
 - Node.js 18+
@@ -210,7 +210,7 @@ Open **http://localhost:5173**
 
 ---
 
-## 🔑 Environment Variables
+## Environment Variables
 
 Copy `server/.env.example` to `server/.env` and fill in:
 
@@ -225,7 +225,7 @@ Copy `server/.env.example` to `server/.env` and fill in:
 
 ---
 
-## 👤 Demo Credentials
+## Demo Credentials
 
 | Role | Email | Password | Access Level |
 |------|-------|----------|-------------|
@@ -236,7 +236,7 @@ Copy `server/.env.example` to `server/.env` and fill in:
 
 ---
 
-## 📊 Scalability Metrics
+## Scalability Metrics
 
 | Metric | Value |
 |--------|-------|
@@ -254,7 +254,7 @@ Copy `server/.env.example` to `server/.env` and fill in:
 
 ---
 
-## 📱 Responsive Design
+## Responsive Design
 
 | Breakpoint | Layout Behaviour |
 |-----------|----------------|
@@ -266,7 +266,7 @@ Copy `server/.env.example` to `server/.env` and fill in:
 
 ---
 
-## 🖼 Screenshots
+## Screenshots
 
 > Add screenshots to a `screenshots/` folder before final submission.
 
@@ -284,7 +284,7 @@ Copy `server/.env.example` to `server/.env` and fill in:
 
 ---
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 - Email notifications via SendGrid
 - Real-time updates with WebSocket / Socket.io
@@ -298,7 +298,7 @@ Copy `server/.env.example` to `server/.env` and fill in:
 
 ---
 
-## 🏆 FWC Hackathon Compliance
+## FWC Hackathon Compliance
 
 This section maps every FWC JD requirement to the exact implementation in HRVerse AI.
 
@@ -317,7 +317,7 @@ This section maps every FWC JD requirement to the exact implementation in HRVers
 
 ---
 
-## 🔒 Security
+## Security
 
 - Passwords hashed with bcryptjs (salt rounds: 10)
 - JWT tokens signed with `JWT_SECRET` env variable — no secrets in code
@@ -329,7 +329,7 @@ This section maps every FWC JD requirement to the exact implementation in HRVers
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 HRVerse-AI/
@@ -374,10 +374,9 @@ HRVerse-AI/
 
 ---
 
-## 📄 License
+## License
 
 MIT — free to use, modify, and distribute.
 
 ---
 
-*Built with ❤️ for the FWC Hackathon · Powered by Groq LLaMA-3.3-70B*
