@@ -1,11 +1,5 @@
 # HRVerse AI — Project Summary
 
-**Team:** Solo Submission  
-**Hackathon:** FWC — Build the Future of HR Management  
-**Submission Date:** June 2026  
-
----
-
 ## What We Built
 
 HRVerse AI is a production-grade, AI-powered Human Resource Management System that replaces manual HR workflows with an intelligent, automated pipeline. From the moment a candidate applies to the day an employee retires, every step is tracked, analysed, and optimised by AI.
