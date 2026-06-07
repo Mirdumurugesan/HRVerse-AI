@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Pagination from "./Pagination";
 
 function Candidates() {
   const { apiFetch } = useAuth();
+  const navigate = useNavigate();
   const [candidates, setCandidates] = useState([]);
   const [search, setSearch] = useState("");
   const [loading,     setLoading]     = useState(true);
@@ -12,6 +14,8 @@ function Candidates() {
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(25);
+  const [scanResults,  setScanResults]  = useState({});   // { [candidateId]: result }
+  const [scanLoading,  setScanLoading]  = useState({});   // { [candidateId]: bool }
 
   const startVoiceSearch = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -50,6 +54,18 @@ function Candidates() {
   // search resets to page 1
   const handleSearch = (val) => { setSearch(val); setPage(1); };
 
+  const deepScan = async (c) => {
+    const id = c._id;
+    if (scanResults[id]) { setScanResults(p => ({ ...p, [id]: null })); return; } // toggle off
+    setScanLoading(p => ({ ...p, [id]: true }));
+    try {
+      const r    = await apiFetch("/api/candidates/" + id + "/scan", { method: "POST" });
+      const data = await r.json();
+      setScanResults(p => ({ ...p, [id]: data }));
+    } catch (e) { console.error(e); }
+    finally { setScanLoading(p => ({ ...p, [id]: false })); }
+  };
+
   // candidates already paginated server-side; no client filter needed
   const filtered = candidates;
 
@@ -82,7 +98,7 @@ function Candidates() {
             title="Voice search candidates">
             {voiceActive ? "🔴" : "🎤"}
           </button>
-          <button className="aiBtn">⚡ Run AI Scan</button>
+          <button className="aiBtn" onClick={() => { setPage(1); setSearch(""); }}>⚡ Run AI Scan</button>
         </div>
       </div>
 
@@ -177,9 +193,59 @@ function Candidates() {
                   ))}
                 </div>
                 <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
-                  <button className="aiBtn" style={{ padding: "8px 16px", fontSize: "13px" }}>🤖 AI Deep Scan</button>
-                  <button className="secondaryBtn" style={{ padding: "8px 16px", fontSize: "13px" }}>Schedule Interview</button>
+                  <button className="aiBtn" style={{ padding: "8px 16px", fontSize: "13px" }}
+                    onClick={() => deepScan(c)} disabled={scanLoading[c._id]}>
+                    {scanLoading[c._id] ? "Scanning..." : scanResults[c._id] ? "✕ Close Scan" : "🤖 AI Deep Scan"}
+                  </button>
+                  <button className="secondaryBtn" style={{ padding: "8px 16px", fontSize: "13px" }}
+                    onClick={() => navigate("/interviews")}>
+                    Schedule Interview
+                  </button>
                 </div>
+
+                {/* AI Deep Scan result panel */}
+                {scanResults[c._id] && (
+                  <div style={{ marginTop: 14, background: "#00e5a808", border: "1px solid #00e5a830",
+                    borderRadius: 12, padding: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                      <span style={{ color: "#00e5a8", fontWeight: 700, fontSize: 13 }}>🤖 AI Deep Scan — {scanResults[c._id].candidateName}</span>
+                      <span style={{ background: "#00e5a820", color: "#00e5a8", border: "1px solid #00e5a8",
+                        padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>
+                        {scanResults[c._id].overallVerdict}
+                      </span>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                      <div>
+                        <p style={{ color: "#64748b", fontSize: 11, marginBottom: 6 }}>✅ STRENGTHS</p>
+                        {(scanResults[c._id].strengths || []).map((s, i) => (
+                          <p key={i} style={{ color: "#00e5a8", fontSize: 12, margin: "2px 0" }}>• {s}</p>
+                        ))}
+                      </div>
+                      <div>
+                        <p style={{ color: "#64748b", fontSize: 11, marginBottom: 6 }}>⚠ GAPS</p>
+                        {(scanResults[c._id].gaps || []).map((g, i) => (
+                          <p key={i} style={{ color: "#f59e0b", fontSize: 12, margin: "2px 0" }}>• {g}</p>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: 10 }}>
+                      <p style={{ color: "#64748b", fontSize: 11, marginBottom: 6 }}>🎯 INTERVIEW FOCUS AREAS</p>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        {(scanResults[c._id].interviewFocus || []).map((f, i) => (
+                          <span key={i} style={{ background: "#1da1ff20", color: "#1da1ff",
+                            border: "1px solid #1da1ff40", padding: "2px 10px", borderRadius: 20, fontSize: 11 }}>{f}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
+                      background: "#06111e", borderRadius: 8, padding: "8px 12px" }}>
+                      <span style={{ color: "#94a3b8", fontSize: 12 }}>{scanResults[c._id].recommendation}</span>
+                      <span style={{ color: "#8b5cf6", fontWeight: 700, fontSize: 13, marginLeft: 12, flexShrink: 0 }}>
+                        {scanResults[c._id].salaryEstimate}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

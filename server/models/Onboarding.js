@@ -43,4 +43,8 @@ const onboardingSchema = new mongoose.Schema({
   bondYears:     { type: Number, default: 3 },
 }, { timestamps: true });
 
+onboardingSchema.index({ createdAt: -1 });
+onboardingSchema.index({ status: 1 });
+onboardingSchema.index({ name: 1 });
+
 module.exports = mongoose.model("Onboarding", onboardingSchema);

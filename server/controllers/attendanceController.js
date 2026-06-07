@@ -89,20 +89,29 @@ const getMyAttendance = async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
-// GET /api/attendance/summary  (Admin/HR/Manager — today stats)
+// GET /api/attendance/summary  (Admin/HR/Manager)
+// Returns today's stats; if today has no records, falls back to last 7 days aggregate.
 const getAttendanceSummary = async (req, res) => {
   try {
     const today    = startOfDay();
     const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
 
-    const todayRecords = await Attendance.find({ date: { $gte: today, $lt: tomorrow } });
-    const total   = todayRecords.length;
-    const present = todayRecords.filter(r => r.status === "Present").length;
-    const absent  = todayRecords.filter(r => r.status === "Absent").length;
-    const wfh     = todayRecords.filter(r => r.workMode === "WFH").length;
+    let records = await Attendance.find({ date: { $gte: today, $lt: tomorrow } });
+    let label   = "Today";
+
+    if (records.length === 0) {
+      const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      records = await Attendance.find({ date: { $gte: weekAgo, $lt: tomorrow } });
+      label   = "Last 7 Days";
+    }
+
+    const total   = records.length;
+    const present = records.filter(r => r.status === "Present").length;
+    const absent  = records.filter(r => r.status === "Absent").length;
+    const wfh     = records.filter(r => r.workMode === "WFH").length;
     const rate    = total ? Math.round((present / total) * 100) : 0;
 
-    res.json({ total, present, absent, wfh, rate, date: today });
+    res.json({ total, present, absent, wfh, rate, label, date: today });
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 

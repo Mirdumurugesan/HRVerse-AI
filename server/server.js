@@ -1,8 +1,9 @@
 require("dotenv").config();
-const express   = require("express");
-const cors      = require("cors");
-const helmet    = require("helmet");
-const connectDB = require("./config/db");
+const express     = require("express");
+const cors        = require("cors");
+const helmet      = require("helmet");
+const compression = require("compression");
+const connectDB   = require("./config/db");
 const { validateConnections } = require("./services/aiService");
 
 connectDB();
@@ -10,6 +11,9 @@ connectDB();
 const app = express();
 
 // ── Security headers ────────────────────────────────────────
+// ── Gzip compression — reduces JSON payload size by 60-80% ──
+app.use(compression());
+
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }, // allow file serving
   contentSecurityPolicy: false,                           // disabled — frontend is separate origin

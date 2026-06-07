@@ -28,9 +28,12 @@ performanceSchema.index({ aiScore: -1 });
 performanceSchema.index({ "pip.active": 1 });
 performanceSchema.index({ promotionReady: 1 });
 
-performanceSchema.pre("save", function(next) {
-  this.aiScore = Math.round(this.rating * 20);
-  next();
+performanceSchema.pre("save", async function() {
+  this.aiScore        = Math.round(this.rating * 20);
+  this.promotionReady = this.rating >= 4;
+  if (this.rating <= 2 && !this.pip?.active) {
+    this.pip = { active: true, reason: "Performance below threshold", progress: 0, since: new Date() };
+  }
 });
 
 module.exports = mongoose.model("Performance", performanceSchema);

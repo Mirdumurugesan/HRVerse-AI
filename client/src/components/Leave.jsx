@@ -1,25 +1,40 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
+import Pagination from "./Pagination";
 
 function Leave() {
   const { name: loggedInName, empName, role, isEmployee, apiFetch } = useAuth();
-  // Use resolved employee name (linked to seeded data) for queries/display.
-  // Falls back to loggedInName if empName not yet populated.
   const displayName = empName || loggedInName || "";
-  const [leaves, setLeaves] = useState([]);
+  const [leaves,       setLeaves]       = useState([]);
+  const [search,       setSearch]       = useState("");
+  const [autoApproving,setAutoApproving]= useState(false);
+  const [page,         setPage]         = useState(1);
+  const [pages,        setPages]        = useState(1);
+  const [total,        setTotal]        = useState(0);
+  const limit = 25;
   const [form, setForm] = useState({
     employeeName: displayName, leaveType: "", startDate: "", endDate: "", reason: ""
   });
 
-  const loadLeaves = async () => {
+  const loadLeaves = useCallback(async (p = page) => {
     try {
-      const res  = await apiFetch("/api/leaves");
+      const params = new URLSearchParams({ page: p, limit });
+      if (!isEmployee && search) params.set("search", search);
+      const res  = await apiFetch("/api/leaves?" + params.toString());
+      setPages(parseInt(res.headers.get("X-Pages") || "1"));
+      setTotal(parseInt(res.headers.get("X-Total") || "0"));
       const data = await res.json();
       if (Array.isArray(data)) setLeaves(data);
     } catch (err) { console.error(err); }
-  };
+  }, [page, search, isEmployee]);
 
-  useEffect(() => { loadLeaves(); }, []);
+  useEffect(() => { loadLeaves(page); }, [page]);
+
+  // search debounce — reset to page 1
+  useEffect(() => {
+    const t = setTimeout(() => { setPage(1); loadLeaves(1); }, 350);
+    return () => clearTimeout(t);
+  }, [search]);
 
   const applyLeave = async () => {
     if (!form.leaveType || !form.startDate || !form.endDate) {
@@ -42,9 +57,32 @@ function Leave() {
     } catch (err) { console.error(err); }
   };
 
+  const rejectLeave = async (id) => {
+    try {
+      await apiFetch("/api/leaves/reject/" + id, { method: "PUT" });
+      loadLeaves();
+    } catch (err) { console.error(err); }
+  };
+
+  const autoApproveAll = async () => {
+    const pending = leaves.filter(l => l.status === "Pending").length;
+    if (pending === 0) { alert("No pending leave requests to approve."); return; }
+    if (!window.confirm(`AI Auto-Approve: Approve all ${pending} pending leave requests?`)) return;
+    setAutoApproving(true);
+    try {
+      const r    = await apiFetch("/api/leaves/auto-approve", { method: "PUT" });
+      const data = await r.json();
+      alert(data.message || "Auto-approved successfully.");
+      loadLeaves();
+    } catch (err) { console.error(err); }
+    finally { setAutoApproving(false); }
+  };
+
   const statusColor = (s) => ({ "Pending": "#f59e0b", "Approved": "#00e5a8", "Rejected": "#ff5c5c" }[s] || "#64748b");
   const leaveTypes  = ["Sick Leave", "Annual Leave", "Casual Leave", "WFH", "Maternity", "Paternity", "Emergency"];
 
+  // Server already filters — just use leaves directly
+  const filteredLeaves = leaves;
   const pendingCount  = leaves.filter(l => l.status === "Pending").length;
   const approvedCount = leaves.filter(l => l.status === "Approved").length;
   const rejectedCount = leaves.filter(l => l.status === "Rejected").length;
@@ -64,8 +102,19 @@ function Leave() {
           </p>
         </div>
         <div className="topActions">
-          {!isEmployee && <input placeholder="Search employee..." className="enterpriseSearch" />}
-          {!isEmployee && <button className="aiBtn">⚡ AI Auto-Approve</button>}
+          {!isEmployee && (
+            <input
+              placeholder="Search employee..."
+              className="enterpriseSearch"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          )}
+          {!isEmployee && (
+            <button className="aiBtn" onClick={autoApproveAll} disabled={autoApproving}>
+              {autoApproving ? "Approving..." : "⚡ AI Auto-Approve"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -100,7 +149,7 @@ function Leave() {
           </div>
           <span className="statusPill pillGreen">ACTIVE</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "16px" }}>
+        <div className="mobileStack" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "16px" }}>
           <div>
             <label style={{ color: "#64748b", fontSize: "12px", display: "block", marginBottom: "8px" }}>EMPLOYEE NAME</label>
             <input placeholder="Employee name" className="formInput" value={form.employeeName}
@@ -137,7 +186,10 @@ function Leave() {
       <div className="bigPanel">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
           <h3>{isEmployee ? "My Leave History" : "All Leave Records"}</h3>
-          <span style={{ color: "#64748b", fontSize: "13px" }}>{leaves.length} record{leaves.length !== 1 ? "s" : ""}</span>
+          <span style={{ color: "#64748b", fontSize: "13px" }}>
+            {total} record{total !== 1 ? "s" : ""}
+            {search && ` matching "${search}"`}
+          </span>
         </div>
         <table>
           <thead>
@@ -148,18 +200,20 @@ function Leave() {
               <th>End</th>
               <th>Reason</th>
               <th>Status</th>
-              {!isEmployee && <th>Action</th>}
+              {!isEmployee && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
-            {leaves.length === 0 ? (
+            {filteredLeaves.length === 0 ? (
               <tr>
                 <td colSpan={isEmployee ? 5 : 7} style={{ textAlign: "center", color: "#475569", padding: "30px" }}>
-                  {isEmployee ? "No leave requests found. Submit one above." : "No leave requests yet."}
+                  {leaves.length === 0
+                    ? (isEmployee ? "No leave requests found. Submit one above." : "No leave requests yet.")
+                    : `No records match "${search}".`}
                 </td>
               </tr>
             ) : (
-              leaves.map((leave) => (
+              filteredLeaves.map((leave) => (
                 <tr key={leave._id}>
                   {!isEmployee && <td style={{ color: "white", fontWeight: "600" }}>{leave.employeeName}</td>}
                   <td>{leave.leaveType}</td>
@@ -172,12 +226,18 @@ function Leave() {
                     </span>
                   </td>
                   {!isEmployee && (
-                    <td>
+                    <td style={{ display: "flex", gap: 6 }}>
                       {leave.status === "Pending" && (
-                        <button onClick={() => approveLeave(leave._id)}
-                          style={{ background: "#00e5a820", border: "1px solid #00e5a8", color: "#00e5a8", padding: "6px 14px", borderRadius: "8px", cursor: "pointer", fontSize: "12px" }}>
-                          Approve
-                        </button>
+                        <>
+                          <button onClick={() => approveLeave(leave._id)}
+                            style={{ background: "#00e5a820", border: "1px solid #00e5a8", color: "#00e5a8", padding: "6px 12px", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}>
+                            ✓ Approve
+                          </button>
+                          <button onClick={() => rejectLeave(leave._id)}
+                            style={{ background: "#ff5c5c20", border: "1px solid #ff5c5c", color: "#ff5c5c", padding: "6px 12px", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}>
+                            ✕ Reject
+                          </button>
+                        </>
                       )}
                     </td>
                   )}
@@ -186,6 +246,11 @@ function Leave() {
             )}
           </tbody>
         </table>
+        <Pagination
+          page={page} pages={pages} total={total} limit={limit}
+          onPageChange={p => setPage(p)}
+          onLimitChange={() => {}}
+        />
       </div>
     </div>
   );

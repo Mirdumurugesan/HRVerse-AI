@@ -67,7 +67,7 @@ function Login() {
           ))}
         </div>
         <div className="loginStats">
-          <div className="loginStat"><h3>5,247</h3><p>Employees</p></div>
+          <div className="loginStat"><h3>15,000+</h3><p>Employees</p></div>
           <div className="loginStat"><h3>93.4%</h3><p>AI Accuracy</p></div>
           <div className="loginStat"><h3>40</h3><p>Open Roles</p></div>
         </div>

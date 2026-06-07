@@ -28,5 +28,8 @@ leaveSchema.index({ status: 1 });
 leaveSchema.index({ department: 1 });
 leaveSchema.index({ leaveType: 1 });
 leaveSchema.index({ startDate: -1 });
+leaveSchema.index({ employeeName: 1 });          // search by name
+leaveSchema.index({ createdAt: -1 });             // default sort
+leaveSchema.index({ status: 1, createdAt: -1 }); // compound — pending filter + sort
 
 module.exports = mongoose.model("Leave", leaveSchema);

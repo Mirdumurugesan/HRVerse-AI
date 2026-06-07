@@ -911,12 +911,18 @@ input[type="file"]::file-selector-button:hover {
   table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
   table thead, table tbody, table tr { display: table; width: 100%; }
 
-  /* Forms stack to single column */
-  .formGrid2 { grid-template-columns: 1fr !important; }
-  div[style*="grid-template-columns: repeat(2"] { grid-template-columns: 1fr !important; }
+  /* Forms stack to single column — covers both CSS-class and inline-style grids */
+  .formGrid2,
+  .formGrid2col { grid-template-columns: 1fr !important; }
+
+  /* Override inline style 2-column grids on mobile using a wrapping class */
+  /* Components use .mobileStack for their form grid wrappers */
+  .mobileStack { grid-template-columns: 1fr !important; }
+
+  /* Broad catch for inline repeat(2 grids — works in most browsers */
+  div[style*="repeat(2,1fr)"],
+  div[style*="repeat(2, 1fr)"],
   div[style*="1fr 1fr"] { grid-template-columns: 1fr !important; }
-  div[style*="gridTemplateColumns: \"1fr 1fr\""] { grid-template-columns: 1fr !important; }
-  div[style*="gridTemplateColumns: \"repeat(2"] { grid-template-columns: 1fr !important; }
 
   /* Login page */
   .loginPage  { flex-direction: column; }
@@ -1081,103 +1087,6 @@ input[type="file"]::file-selector-button:hover {
 
 .recharts-tooltip-item {
   color: #00e5a8 !important;
-}
-
-/* ========================
-   LOGIN LOGO BOX
-   (used in Login.jsx — alias of .logoBox)
-======================== */
-.loginLogoBox {
-  width: 44px;
-  height: 44px;
-  background: #00e5a8;
-  color: #000;
-  font-weight: 800;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-/* ========================
-   ANALYTICS GRID
-======================== */
-.analyticsGrid {
-  display: grid;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-/* ========================
-   LEGACY COMPONENT STUBS
-   (Topbar, StatCard, Interviews — still in codebase)
-======================== */
-.tableCard {
-  background: #0b1220;
-  border: 1px solid #1e293b;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 16px;
-}
-
-.statCard {
-  background: #0b1220;
-  border: 1px solid #1e293b;
-  padding: 18px;
-  border-radius: 12px;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 20px;
-  background: #08111f;
-  border-bottom: 1px solid #1e293b;
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.searchBox input {
-  background: #0b1220;
-  border: 1px solid #1e293b;
-  color: white;
-  padding: 9px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  outline: none;
-}
-
-.iconBtn {
-  background: #0b1220;
-  border: 1px solid #1e293b;
-  color: #94a3b8;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: .2s;
-}
-.iconBtn:hover { border-color: #00e5a8; color: #00e5a8; }
-
-.reportBtn {
-  background: #00e5a8;
-  color: #000;
-  border: none;
-  padding: 9px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 13px;
 }
 
 /* ========================

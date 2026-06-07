@@ -80,4 +80,19 @@ const getMyPayroll = async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
-module.exports = { createPayroll, getPayrolls, getMyPayroll };
+// PUT /api/payroll/recalculate — Admin: fix all records missing netSalary
+const recalculateAll = async (req, res) => {
+  try {
+    const records = await Payroll.find({ $or: [{ netSalary: { $exists: false } }, { netSalary: null }, { netSalary: 0 }] });
+    let fixed = 0;
+    for (const r of records) {
+      const tax = Math.round(Number(r.basicSalary) * 0.1);
+      const net = Number(r.basicSalary) + Number(r.bonus) - Number(r.deductions) - tax;
+      await Payroll.updateOne({ _id: r._id }, { $set: { tax, netSalary: net } });
+      fixed++;
+    }
+    res.json({ fixed, message: `Recalculated netSalary for ${fixed} payroll records.` });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+module.exports = { createPayroll, getPayrolls, getMyPayroll, recalculateAll };

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import Pagination from "./Pagination";
 
 const DEFAULT_STEPS = [
   "Offer Letter Signed & e-KYC Verified",
@@ -17,19 +18,24 @@ function Onboarding() {
   const [loading,  setLoading]  = useState(true);
   const [creating, setCreating] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [selected, setSelected] = useState(null);   // expanded record id
+  const [selected, setSelected] = useState(null);
+  const [page,     setPage]     = useState(1);
+  const [pages,    setPages]    = useState(1);
+  const [total,    setTotal]    = useState(0);
   const [form, setForm] = useState({
     name: "", role: "Engineer", department: "Engineering", startDate: ""
   });
 
   const departments = ["Engineering","AI/ML","Data","DevOps","HR / Admin","Finance","Sales"];
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => { loadAll(page); }, [page]);
 
-  const loadAll = async () => {
+  const loadAll = async (p = 1) => {
     setLoading(true);
     try {
-      const r    = await apiFetch("/api/onboarding");
+      const r    = await apiFetch(`/api/onboarding?page=${p}&limit=20`);
+      setPages(parseInt(r.headers.get("X-Pages") || "1"));
+      setTotal(parseInt(r.headers.get("X-Total")  || "0"));
       const data = await r.json();
       if (Array.isArray(data)) setRecords(data);
     } catch (e) { console.error(e); }
@@ -46,10 +52,11 @@ function Onboarding() {
       });
       const data = await r.json();
       if (r.ok) {
-        setRecords(prev => [data, ...prev]);
         setForm({ name: "", role: "Engineer", department: "Engineering", startDate: "" });
         setShowForm(false);
         setSelected(data._id);
+        setPage(1);
+        loadAll(1);
       } else {
         alert(data.message || "Failed to create onboarding record.");
       }
@@ -176,7 +183,7 @@ function Onboarding() {
       <div className="bigPanel">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <h3>Onboarding Records — Live from Database</h3>
-          <span style={{ color: "#64748b", fontSize: 13 }}>{records.length} total</span>
+          <span style={{ color: "#64748b", fontSize: 13 }}>{total} total</span>
         </div>
 
         {loading && (
@@ -297,6 +304,13 @@ function Onboarding() {
             </div>
           );
         })}
+        {pages > 1 && (
+          <Pagination
+            page={page} pages={pages} total={total} limit={20}
+            onPageChange={p => setPage(p)}
+            onLimitChange={() => {}}
+          />
+        )}
       </div>
     </div>
   );

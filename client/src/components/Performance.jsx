@@ -208,7 +208,7 @@ function Performance() {
           </div>
           <span className="statusPill pillGreen">ACTIVE</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, marginBottom: 16 }}>
+        <div className="mobileStack" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, marginBottom: 16 }}>
           <div>
             <label style={{ color: "#64748b", fontSize: 12, display: "block", marginBottom: 8 }}>EMPLOYEE NAME *</label>
             <input className="formInput" placeholder="Full name" value={form.employeeName}

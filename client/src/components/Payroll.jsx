@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
+
 const MONTHS = ["January","February","March","April","May","June",
                "July","August","September","October","November","December"];
 const DEPARTMENTS = ["Engineering","AI/ML","Data Science","DevOps","HR / Admin","Management"];
@@ -8,10 +9,11 @@ const THIS_MONTH  = MONTHS[new Date().getMonth()];
 const THIS_YEAR   = new Date().getFullYear();
 
 function Payroll() {
-  const { apiFetch } = useAuth();
+  const { apiFetch, role } = useAuth();
   const [payrolls, setPayrolls] = useState([]);
   const [search,   setSearch]   = useState("");
   const [saving,   setSaving]   = useState(false);
+  const [recalculating, setRecalculating] = useState(false);
   const [form, setForm] = useState({
     employeeName: "",
     basicSalary:  "",
@@ -23,6 +25,17 @@ function Payroll() {
   });
 
   useEffect(() => { load(); }, []);
+
+  const recalculate = async () => {
+    setRecalculating(true);
+    try {
+      const r    = await apiFetch("/api/payroll/recalculate", { method: "PUT" });
+      const data = await r.json();
+      if (r.ok) { alert(data.message); load(); }
+      else       { alert(data.error || "Recalculation failed."); }
+    } catch (e) { console.error(e); }
+    finally { setRecalculating(false); }
+  };
 
   const load = async () => {
     try {
@@ -91,6 +104,12 @@ function Payroll() {
           <input placeholder="Search employee, department..." className="enterpriseSearch"
             value={search} onChange={e => setSearch(e.target.value)} />
           <button className="aiBtn" onClick={load}>⚡ Refresh</button>
+          {role === "Admin" && (
+            <button className="aiBtn" onClick={recalculate} disabled={recalculating}
+              style={{ background: "#8b5cf6", fontSize: 12 }}>
+              {recalculating ? "Fixing..." : "🔧 Fix KPIs"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -169,7 +188,7 @@ function Payroll() {
           </div>
           <span className="statusPill pillGreen">ACTIVE</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, marginBottom: 16 }}>
+        <div className="mobileStack" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, marginBottom: 16 }}>
           <div>
             <label style={{ color: "#64748b", fontSize: 12, display: "block", marginBottom: 8 }}>EMPLOYEE NAME *</label>
             <input className="formInput" placeholder="Full name" value={form.employeeName}

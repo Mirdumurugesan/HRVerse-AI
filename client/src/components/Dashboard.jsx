@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function useStats() {
@@ -42,6 +43,7 @@ function Feed({ items }) {
 
 /* ── ADMIN ──────────────────────────────────────────────── */
 function AdminDashboard({ stats, name }) {
+  const navigate = useNavigate();
   const s = stats || {};
   const hp = s.hiringPipeline || {};
   const pipeline = [
@@ -68,7 +70,7 @@ function AdminDashboard({ stats, name }) {
         </div>
         <div className="topActions">
           <input placeholder="Search..." className="enterpriseSearch" />
-          <button className="aiBtn">⚡ AI Insights</button>
+          <button className="aiBtn" onClick={() => navigate("/analytics")}>⚡ AI Insights</button>
         </div>
       </div>
       <div className="enterpriseGrid">
@@ -132,6 +134,7 @@ function AdminDashboard({ stats, name }) {
 
 /* ── MANAGER ───────────────────────────────────────────── */
 function ManagerDashboard({ stats, name }) {
+  const navigate = useNavigate();
   const s = stats || {};
   return (
     <>
@@ -142,7 +145,7 @@ function ManagerDashboard({ stats, name }) {
         </div>
         <div className="topActions">
           <input placeholder="Search team..." className="enterpriseSearch" />
-          <button className="aiBtn" style={{background:"#1da1ff"}}>📊 Team Report</button>
+          <button className="aiBtn" style={{background:"#1da1ff"}} onClick={() => navigate("/analytics")}>📊 Team Report</button>
         </div>
       </div>
       <div className="enterpriseGrid">
@@ -192,6 +195,7 @@ function ManagerDashboard({ stats, name }) {
 
 /* ── HR ────────────────────────────────────────────────── */
 function HRDashboard({ stats, name }) {
+  const navigate = useNavigate();
   const s = stats || {};
   const total = s.totalApplications || 0;
   // Use real statusFunnel to get AI-screened count (those with status beyond "Applied")
@@ -215,7 +219,7 @@ function HRDashboard({ stats, name }) {
         </div>
         <div className="topActions">
           <input placeholder="Search candidates..." className="enterpriseSearch" />
-          <button className="aiBtn" style={{background:"#8b5cf6",color:"white"}}>⚡ AI Screen</button>
+          <button className="aiBtn" style={{background:"#8b5cf6",color:"white"}} onClick={() => navigate("/resume")}>⚡ AI Screen</button>
         </div>
       </div>
       <div className="enterpriseGrid">
@@ -268,6 +272,7 @@ function HRDashboard({ stats, name }) {
 
 /* ── EMPLOYEE ──────────────────────────────────────────── */
 function EmployeeDashboard({ stats, name }) {
+  const navigate = useNavigate();
   const s = stats || {};
   const announcements = [
     { title:"Q2 Performance Reviews Complete",      color:"#00e5a8" },
@@ -283,7 +288,7 @@ function EmployeeDashboard({ stats, name }) {
           <p className="pageSub"><span style={{color:"#f59e0b"}}>Employee Portal</span> · Your personal workspace at FWC</p>
         </div>
         <div className="topActions">
-          <a href="/ai-assistant"><button className="aiBtn" style={{background:"#f59e0b",color:"#000"}}>🤖 Ask AI</button></a>
+          <button className="aiBtn" style={{background:"#f59e0b",color:"#000"}} onClick={() => navigate("/ai-assistant")}>🤖 Ask AI</button>
         </div>
       </div>
       <div className="enterpriseGrid">
@@ -310,13 +315,11 @@ function EmployeeDashboard({ stats, name }) {
             { label:"My Payslip",          path:"/my-portal",    color:"#00e5a8", icon:"💰" },
             { label:"Ask AI Assistant",    path:"/ai-assistant", color:"#8b5cf6", icon:"🤖" },
           ].map((a,i) => (
-            <a key={i} href={a.path} style={{textDecoration:"none"}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,padding:12,borderRadius:10,marginBottom:8,background:a.color+"10",border:`1px solid ${a.color}20`,cursor:"pointer"}}>
-                <span style={{fontSize:18}}>{a.icon}</span>
-                <span style={{color:a.color,fontWeight:600,fontSize:13}}>{a.label}</span>
-                <span style={{marginLeft:"auto",color:"#334155"}}>→</span>
-              </div>
-            </a>
+            <div key={i} onClick={() => navigate(a.path)} style={{display:"flex",alignItems:"center",gap:12,padding:12,borderRadius:10,marginBottom:8,background:a.color+"10",border:`1px solid ${a.color}20`,cursor:"pointer"}}>
+              <span style={{fontSize:18}}>{a.icon}</span>
+              <span style={{color:a.color,fontWeight:600,fontSize:13}}>{a.label}</span>
+              <span style={{marginLeft:"auto",color:"#334155"}}>→</span>
+            </div>
           ))}
           <div style={{marginTop:12,background:"#06111e",borderRadius:10,padding:14,border:"1px solid #1e293b"}}>
             <p style={{color:"#f59e0b",fontWeight:600,fontSize:12,margin:"0 0 6px"}}>📊 MY STATS</p>

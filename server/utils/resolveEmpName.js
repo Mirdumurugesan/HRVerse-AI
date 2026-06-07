@@ -13,23 +13,31 @@
  */
 const Employee = require("../models/Employee");
 
+// In-process cache: userId → resolved name (cleared on restart, good enough for demo)
+const _cache = new Map();
+
 async function resolveEmpName(user) {
   if (!user) return "";
+
+  const cacheKey = String(user._id || user.id || user.name);
+  if (_cache.has(cacheKey)) return _cache.get(cacheKey);
+
+  let resolved = user.name; // default fallback
 
   // 1. Hard link via employeeProfileId
   if (user.employeeProfileId) {
     const emp = await Employee.findById(user.employeeProfileId).select("name").lean();
-    if (emp?.name) return emp.name;
+    if (emp?.name) resolved = emp.name;
+  } else {
+    // 2. Exact name match
+    const byName = await Employee.findOne({
+      name: { $regex: new RegExp("^" + escapeRx(user.name) + "$", "i") },
+    }).select("name").lean();
+    if (byName?.name) resolved = byName.name;
   }
 
-  // 2. Try exact name match in employees collection
-  const byName = await Employee.findOne({
-    name: { $regex: new RegExp("^" + escapeRx(user.name) + "$", "i") },
-  }).select("name").lean();
-  if (byName?.name) return byName.name;
-
-  // 3. Fallback
-  return user.name;
+  _cache.set(cacheKey, resolved);
+  return resolved;
 }
 
 function escapeRx(str) {

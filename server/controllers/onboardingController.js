@@ -1,9 +1,19 @@
 const Onboarding = require("../models/Onboarding");
 
-// GET /api/onboarding
+// GET /api/onboarding  (paginated, lean)
 const getAll = async (req, res) => {
   try {
-    const list = await Onboarding.find().sort({ createdAt: -1 });
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(50,  parseInt(req.query.limit) || 20);
+    const skip  = (page - 1) * limit;
+
+    const [list, total] = await Promise.all([
+      Onboarding.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Onboarding.countDocuments(),
+    ]);
+
+    res.set("X-Total", total);
+    res.set("X-Pages", Math.ceil(total / limit));
     res.json(list);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
@@ -40,22 +50,32 @@ const updateStep = async (req, res) => {
     const { id, stepIndex } = req.params;
     const idx = parseInt(stepIndex, 10);
 
-    const doc = await Onboarding.findById(id);
+    // Read lean for speed, then do a targeted atomic update
+    const doc = await Onboarding.findById(id).lean();
     if (!doc) return res.status(404).json({ message: "Onboarding record not found" });
     if (isNaN(idx) || idx < 0 || idx >= doc.steps.length)
       return res.status(400).json({ message: "Invalid step index" });
 
-    doc.steps[idx].completed  = true;
-    doc.steps[idx].status     = "Completed";
-    doc.steps[idx].completedAt = new Date();
+    // Build atomic $set paths
+    const now  = new Date();
+    const set  = {
+      [`steps.${idx}.completed`]:   true,
+      [`steps.${idx}.status`]:      "Completed",
+      [`steps.${idx}.completedAt`]: now,
+    };
 
-    const done = doc.steps.filter(s => s.completed).length;
-    doc.completionPercent = Math.round((done / doc.steps.length) * 100);
-    if (doc.completionPercent === 100) doc.status = "Completed";
-    else if (done > 0)                 doc.status = "In Progress";
+    const updatedSteps = doc.steps.map((s, i) =>
+      i === idx ? { ...s, completed: true } : s
+    );
+    const done    = updatedSteps.filter(s => s.completed).length;
+    const pct     = Math.round((done / updatedSteps.length) * 100);
+    set.completionPercent = pct;
+    set.status = pct === 100 ? "Completed" : done > 0 ? "In Progress" : "Not Started";
 
-    await doc.save();
-    res.json(doc);
+    const updated = await Onboarding.findByIdAndUpdate(
+      id, { $set: set }, { new: true, lean: true }
+    );
+    res.json(updated);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 

@@ -5,7 +5,7 @@ function AttendanceReplica() {
   const { apiFetch } = useAuth();
   const [attendance,   setAttendance]   = useState([]);
   const [leaves,       setLeaves]       = useState([]);
-  const [summary,      setSummary]      = useState({ present:0, absent:0, wfh:0, rate:0 });
+  const [summary,      setSummary]      = useState({ present:0, absent:0, wfh:0, rate:0, label:"Today" });
   const [employeeName, setEmployeeName] = useState("");
   const [status,       setStatus]       = useState("Present");
   const [workMode,     setWorkMode]     = useState("Office");
@@ -133,7 +133,7 @@ function AttendanceReplica() {
         <div className="enterpriseCard" style={{ borderTop: "3px solid #f59e0b" }}>
           <h5>ATTENDANCE RATE</h5>
           <h1 style={{ color: "#f59e0b" }}>{summary.rate || 0}%</h1>
-          <span>Today</span>
+          <span>{summary.label || "Today"}</span>
         </div>
       </div>
 

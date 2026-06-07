@@ -29,12 +29,11 @@ payrollSchema.index({ status: 1 });
 payrollSchema.index({ anomaly: 1 });
 payrollSchema.index({ year: -1, month: 1 });
 
-payrollSchema.pre("save", function(next) {
-  if (!this.tax) {
-    this.tax = Math.round(Number(this.basicSalary) * 0.1);
-  }
+payrollSchema.pre("save", async function() {
+  // Always recompute tax (10% of basic)
+  this.tax = Math.round(Number(this.basicSalary) * 0.1);
   this.netSalary = Number(this.basicSalary) + Number(this.bonus) - Number(this.deductions) - Number(this.tax);
-  next();
+  if (!this.status) this.status = "Processed";
 });
 
 module.exports = mongoose.model("Payroll", payrollSchema);
