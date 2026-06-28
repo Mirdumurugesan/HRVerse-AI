@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 
-export const API = "http://localhost:5000";
+export const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const AuthContext = createContext(null);
 
