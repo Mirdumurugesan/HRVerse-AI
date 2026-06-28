@@ -212,7 +212,6 @@ Open **http://localhost:5173**
 
 ## Environment Variables
 
-Copy `server/.env.example` to `server/.env` and fill in:
 
 | Variable | Required | Description |
 |----------|:--------:|-------------|
