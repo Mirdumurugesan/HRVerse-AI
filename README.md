@@ -169,7 +169,7 @@ No Gemini. No OpenAI. The AI chain is entirely open-source model-based.
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/<your-username>/HRVerse-AI.git
+git clone https://github.com/Mirdumurugesan/HRVerse-AI.git
 cd HRVerse-AI
 ```
 
